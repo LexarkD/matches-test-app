@@ -1,20 +1,33 @@
-import { useState } from 'react';
+import { useCallback, useState } from "react";
 
 // Избранные матчи (по id). Хранятся только в памяти, пока открыто приложение.
 export function useFavorites() {
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  const isFavorite = (id: string) => Boolean(favorites.indexOf(id));
+  // includes возвращает true/false - входит ли идентификатор в избранное;
 
-  const toggle = (id: string) => {
-    const index = favorites.indexOf(id);
-    if (index === -1) {
-      favorites.push(id);
-    } else {
-      favorites.splice(index, 1);
-    }
-    setFavorites(favorites);
-  };
+  //Исправлена ошибка: indexOf возвращает позицию элемента или -1, если элемента нет. Boolean(indexOf): -1 («не найден») давал true, а 0 (первый в списке) — false.
+  const isFavorite = useCallback(
+    (id: string) => favorites.includes(id),
+    [favorites]
+  );
+
+  // Создаём НОВЫЙ массив вместо мутации старого.
+  // Было push/splice напрямую мутирует состояние favorites + setFavorites(на тот же массив favorites): ссылка не менялась,
+  // React считал, что стейт не изменился, и не перерисовывал экран.
+  // Функциональное обновление (prev => ...) берёт актуальное значение,
+  // даже если нажать несколько раз подряд до перерисовки.
+  const toggle = useCallback((id: string) => {
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }, []);
 
   return { favorites, isFavorite, toggle };
 }
+
+//ОШИБКА: indexOf возвращает позицию элемента или -1, если элемента нет. Boolean превращает любое число в true, кроме 0.
+// Поэтому матчи которые не наъодятся в избранном становятся isFavorite = true
+// А первый добавленный матч с позицией 0 - будет isFavorite = false
+
+//favorites.push(id) напрямую мутирует состояние а не через setFavorites
