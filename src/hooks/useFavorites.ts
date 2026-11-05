@@ -25,9 +25,3 @@ export function useFavorites() {
 
   return { favorites, isFavorite, toggle };
 }
-
-//ОШИБКА: indexOf возвращает позицию элемента или -1, если элемента нет. Boolean превращает любое число в true, кроме 0.
-// Поэтому матчи которые не наъодятся в избранном становятся isFavorite = true
-// А первый добавленный матч с позицией 0 - будет isFavorite = false
-
-//favorites.push(id) напрямую мутирует состояние а не через setFavorites
