@@ -13,6 +13,7 @@ import { UpdatedAgo } from "../components/UpdatedAgo";
 import { useMatches } from "../hooks/useMatches";
 import type { MatchFilter } from "../types/match";
 import { filterMatches, sortByStartTime } from "../utils/matches";
+import { useFavorites } from "../hooks/useFavorites";
 
 // NOTE: Экран собирает всё вместе. Данные и их состояния — в useMatches,
 // форматирование — в utils, отображение одного матча — в MatchCard.
@@ -20,6 +21,7 @@ import { filterMatches, sortByStartTime } from "../utils/matches";
 
 export function MatchesScreen() {
   const { matches, error, isLoading, updatedAt, reload } = useMatches();
+  const { favorites, isFavorite, toggle } = useFavorites();
   const [filter, setFilter] = useState<MatchFilter>("all");
 
   // Пересчитываем список только когда меняются данные или фильтр,
@@ -94,8 +96,16 @@ export function MatchesScreen() {
       <FlatList
         data={visibleMatches}
         keyExtractor={(match) => match.id}
-        renderItem={({ item }) => <MatchCard match={item} />}
-        // Pull-to-refresh на телефоне
+        renderItem={({ item }) => (
+          <MatchCard
+            match={item}
+            isFavorite={isFavorite(item.id)}
+            onToggleFavorite={() => toggle(item.id)}
+          />
+        )}
+        // FlatList перерисовывает строки, только когда меняется data.
+        // Избранное — внешнее для списка состояние, поэтому сообщаем о нём через extraData.
+        extraData={favorites}
         refreshing={isLoading}
         onRefresh={reload}
         ListEmptyComponent={<Text style={styles.empty}>{emptyText}</Text>}

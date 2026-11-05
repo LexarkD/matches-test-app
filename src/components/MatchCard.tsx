@@ -1,15 +1,18 @@
 import { StyleSheet, Text, View } from "react-native";
 import type { Match } from "../types/match";
 import { formatScore, formatStartsAt, formatStatus } from "../utils/matches";
+import { FavoriteButton } from "./FavoriteButton";
 
 // NOTE: Карточка только отображает матч. Вся логика форматирования — в utils/matches,
 // поэтому здесь нет условий про null, 0:0 или неизвестный статус.
 
 type Props = {
   match: Match;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 };
 
-export function MatchCard({ match }: Props) {
+export function MatchCard({ match, isFavorite, onToggleFavorite }: Props) {
   const isLive = match.status === "live";
 
   return (
@@ -19,7 +22,7 @@ export function MatchCard({ match }: Props) {
         <Text style={[styles.status, isLive && styles.statusLive]}>
           {formatStatus(match)}
         </Text>
-        {/* Часть 2: здесь будет FavoriteButton */}
+        <FavoriteButton active={isFavorite} onPress={onToggleFavorite} />
       </View>
 
       <View style={styles.teams}>
@@ -54,7 +57,7 @@ const styles = StyleSheet.create({
   },
   // flexShrink: длинная дата сжимается, а не выталкивает статус за край
   date: { fontSize: 13, color: "#6b7280", flexShrink: 1 },
-  status: { fontSize: 13, color: "#374151" },
+  status: { fontSize: 13, color: "#374151", marginLeft: "auto" },
   statusLive: { color: "#ef3124", fontWeight: "600" },
   teams: { flexDirection: "row", alignItems: "center" },
   // flex: 1 у обеих команд — они делят ширину поровну, счёт ровно по центру
